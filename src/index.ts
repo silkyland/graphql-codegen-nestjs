@@ -8,7 +8,7 @@ export * from './visitor';
 
 const NESTJS_GRAPHQL_IMPORT = `import * as GQL from '@nestjs/graphql';`;
 const DECORATOR_FIX = `type FixDecorator<T> = T;`;
-const isDefinitionInterface = (definition: string) => definition.includes('@GQL.InterfaceType()');
+const isDefinitionInterface = (definition: string): boolean => definition.includes('@GQL.InterfaceType()');
 
 export const plugin: PluginFunction<NestJSGraphQLPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,

@@ -86,12 +86,12 @@ export class NestJSGraphQLVisitor<
 
     const enumNames = Object.values(schema.getTypeMap())
       .map(type => (type instanceof GraphQLEnumType ? type.name : undefined))
-      .filter(t => t);
+      .filter((t): t is string => t !== undefined);
     this.setArgumentsTransformer(
       new TypeScriptOperationVariablesToObject(
         this.scalars,
         this.convertName,
-        this.config.avoidOptionals.object,
+        this.config.avoidOptionals.object || false,
         this.config.immutableTypes,
         null,
         enumNames,
@@ -111,7 +111,7 @@ export class NestJSGraphQLVisitor<
     let declarationBlock = this.getObjectTypeDeclarationBlock(node, originalNode);
     if (!GRAPHQL_TYPES.includes((node.name as unknown) as string)) {
       // Add type-graphql ObjectType decorator
-      const interfaces = originalNode.interfaces.map(i => this.convertName(i));
+      const interfaces = originalNode.interfaces!.map(i => this.convertName(i));
       let decoratorOptions = '';
       if (interfaces.length > 1) {
         decoratorOptions = `{ implements: [${interfaces.join(', ')}] }`;
@@ -142,10 +142,10 @@ export class NestJSGraphQLVisitor<
   ): DeclarationBlock {
     return new DeclarationBlock(this._declarationBlockConfig)
       .export()
-      .asKind(this._parsedConfig.declarationKind.arguments)
+      .asKind(this._parsedConfig.declarationKind.arguments || 'type')
       .withName(this.convertName(name))
-      .withComment(node.description)
-      .withBlock(field.arguments.map(argument => this.InputValueDefinition(argument)).join('\n'));
+      .withComment(node.description ?? null)
+      .withBlock((field.arguments ?? []).map(argument => this.InputValueDefinition(argument)).join('\n'));
   }
 
   getArgumentsObjectTypeDefinition(
@@ -236,7 +236,7 @@ export class NestJSGraphQLVisitor<
     return { type, isNullable, isArray, isScalar };
   }
 
-  fixDecorator(type: Type, typeString: string) {
+  fixDecorator(type: Type, typeString: string): string {
     return type.isArray || type.isNullable || type.isScalar ? typeString : `FixDecorator<${typeString}>`;
   }
 
