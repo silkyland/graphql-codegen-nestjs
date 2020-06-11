@@ -1,21 +1,21 @@
 import { Types, PluginFunction } from '@graphql-codegen/plugin-helpers';
 import { parse, printSchema, visit, GraphQLSchema } from 'graphql';
-import { TypeGraphQLVisitor } from './visitor';
+import { NestJSGraphQLVisitor } from './visitor';
 import { TsIntrospectionVisitor, includeIntrospectionDefinitions } from '@graphql-codegen/typescript';
-import { TypeGraphQLPluginConfig } from './config';
+import { NestJSGraphQLPluginConfig } from './config';
 
 export * from './visitor';
 
-const TYPE_GRAPHQL_IMPORT = `import * as GQL from '@nestjs/graphql';`;
+const NESTJS_GRAPHQL_IMPORT = `import * as GQL from '@nestjs/graphql';`;
 const DECORATOR_FIX = `type FixDecorator<T> = T;`;
 const isDefinitionInterface = (definition: string) => definition.includes('@GQL.InterfaceType()');
 
-export const plugin: PluginFunction<TypeGraphQLPluginConfig, Types.ComplexPluginOutput> = (
+export const plugin: PluginFunction<NestJSGraphQLPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
   documents: Types.DocumentFile[],
-  config: TypeGraphQLPluginConfig,
+  config: NestJSGraphQLPluginConfig,
 ) => {
-  const visitor = new TypeGraphQLVisitor(schema, config);
+  const visitor = new NestJSGraphQLVisitor(schema, config);
   const printedSchema = printSchema(schema);
   const astNode = parse(printedSchema);
   const maybeValue = `export type Maybe<T> = ${visitor.config.maybeValue};`;
@@ -30,7 +30,7 @@ export const plugin: PluginFunction<TypeGraphQLPluginConfig, Types.ComplexPlugin
   );
 
   return {
-    prepend: [...visitor.getEnumsImports(), maybeValue, TYPE_GRAPHQL_IMPORT, DECORATOR_FIX],
+    prepend: [...visitor.getEnumsImports(), maybeValue, NESTJS_GRAPHQL_IMPORT, DECORATOR_FIX],
     content: [scalars, ...definitions, ...introspectionDefinitions].join('\n'),
   };
 };

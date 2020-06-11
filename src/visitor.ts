@@ -4,7 +4,7 @@ import {
   DeclarationBlock,
   AvoidOptionalsConfig,
 } from '@graphql-codegen/visitor-plugin-common';
-import { TypeGraphQLPluginConfig } from './config';
+import { NestJSGraphQLPluginConfig } from './config';
 import autoBind from 'auto-bind';
 import {
   FieldDefinitionNode,
@@ -31,7 +31,7 @@ export type DecoratorConfig = {
   arguments: string;
 };
 
-export interface TypeGraphQLPluginParsedConfig extends TypeScriptPluginParsedConfig {
+export interface NestJSGraphQLPluginParsedConfig extends TypeScriptPluginParsedConfig {
   avoidOptionals: AvoidOptionalsConfig;
   constEnums: boolean;
   enumsAsTypes: boolean;
@@ -45,7 +45,7 @@ const ARRAY_REGEX = /^Array<(.*?)>$/;
 const SCALAR_REGEX = /^Scalars\['(.*?)'\]$/;
 const GRAPHQL_TYPES = ['Query', 'Mutation', 'Subscription'];
 const SCALARS = ['ID', 'String', 'Boolean', 'Int', 'Float'];
-const TYPE_GRAPHQL_SCALARS = ['ID', 'Int', 'Float'];
+const NESTJS_GRAPHQL_SCALARS = ['ID', 'Int', 'Float'];
 
 interface Type {
   type: string;
@@ -54,9 +54,9 @@ interface Type {
   isScalar: boolean;
 }
 
-export class TypeGraphQLVisitor<
-  TRawConfig extends TypeGraphQLPluginConfig = TypeGraphQLPluginConfig,
-  TParsedConfig extends TypeGraphQLPluginParsedConfig = TypeGraphQLPluginParsedConfig
+export class NestJSGraphQLVisitor<
+  TRawConfig extends NestJSGraphQLPluginConfig = NestJSGraphQLPluginConfig,
+  TParsedConfig extends NestJSGraphQLPluginParsedConfig = NestJSGraphQLPluginParsedConfig
 > extends TsVisitor<TRawConfig, TParsedConfig> {
   constructor(schema: GraphQLSchema, pluginConfig: TRawConfig, additionalConfig: Partial<TParsedConfig> = {}) {
     super(schema, pluginConfig, {
@@ -219,8 +219,8 @@ export class TypeGraphQLVisitor<
     const singularType = nonNullableType.replace(ARRAY_REGEX, '$1');
     const isScalar = !!singularType.match(SCALAR_REGEX);
     const type = singularType.replace(SCALAR_REGEX, (match, type) => {
-      if (TYPE_GRAPHQL_SCALARS.includes(type)) {
-        // This is a TypeGraphQL type
+      if (NESTJS_GRAPHQL_SCALARS.includes(type)) {
+        // This is a NestJSGraphQL type
         return `GQL.${type}`;
       } else if (global[type]) {
         // This is a JS native type
@@ -272,11 +272,12 @@ export class TypeGraphQLVisitor<
     const comment = transformComment((node.description as any) as string, 1);
 
     const type = this.parseType(rawType);
-    const typeGraphQLType = type.isScalar && TYPE_GRAPHQL_SCALARS.includes(type.type) ? `GQL.${type.type}` : type.type;
+    const nestJSGraphQLType =
+      type.isScalar && NESTJS_GRAPHQL_SCALARS.includes(type.type) ? `GQL.${type.type}` : type.type;
     const decorator =
       '\n' +
       indent(
-        `@GQL.${fieldDecorator}(_type => ${type.isArray ? `[${typeGraphQLType}]` : typeGraphQLType}${
+        `@GQL.${fieldDecorator}(_type => ${type.isArray ? `[${nestJSGraphQLType}]` : nestJSGraphQLType}${
           type.isNullable ? ', { nullable: true }' : ''
         })`,
       ) +
