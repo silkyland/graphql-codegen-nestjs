@@ -325,7 +325,9 @@ export class NestJSGraphQLVisitor<
       super.UnionTypeDefinition(node, key, parent) +
       `export const ${this.convertName(node)} = GQL.createUnionType({
   name: '${this.convertName(node)}',
-  types: () => [${node.types!.map(type => type.name.value).join(', ')}],
+  types: () => [${node
+    .types!.map(type => this.clearOptional(typeof type === 'string' ? ((type as unknown) as string) : type.name.value))
+    .join(', ')}],
 });\n`
     );
   }
