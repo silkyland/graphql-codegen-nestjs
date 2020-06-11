@@ -7,7 +7,6 @@ import { NestJSGraphQLPluginConfig } from './config';
 export * from './visitor';
 
 const NESTJS_GRAPHQL_IMPORT = `import * as GQL from '@nestjs/graphql';`;
-const DECORATOR_FIX = `type FixDecorator<T> = T;`;
 const isDefinitionInterface = (definition: string): boolean => definition.includes('@GQL.InterfaceType()');
 
 export const plugin: PluginFunction<NestJSGraphQLPluginConfig, Types.ComplexPluginOutput> = (
@@ -30,7 +29,7 @@ export const plugin: PluginFunction<NestJSGraphQLPluginConfig, Types.ComplexPlug
   );
 
   return {
-    prepend: [...visitor.getEnumsImports(), maybeValue, NESTJS_GRAPHQL_IMPORT, DECORATOR_FIX],
+    prepend: [...visitor.getEnumsImports(), maybeValue, NESTJS_GRAPHQL_IMPORT],
     content: [scalars, ...definitions, ...introspectionDefinitions].join('\n'),
   };
 };
