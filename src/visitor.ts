@@ -121,7 +121,7 @@ export class NestJSGraphQLVisitor<
       }
 
       declarationBlock = declarationBlock.withComment('');
-      declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
+      declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({ ${decoratorOptions.join(', ')} })`);
     }
 
     return [
@@ -145,7 +145,7 @@ export class NestJSGraphQLVisitor<
 
     // Add InputType decorator
     declarationBlock = declarationBlock.withComment('');
-    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
+    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({ ${decoratorOptions.join(', ')} })`);
 
     return declarationBlock.string;
   }
@@ -278,9 +278,7 @@ export class NestJSGraphQLVisitor<
     const decorator =
       '\n' +
       indent(
-        `@GQL.${fieldDecorator}(_type => ${type.isArray ? arrayType : type.type}, {\n${decoratorOptions.join(
-          ', ',
-        )}\n})`,
+        `@GQL.${fieldDecorator}(_type => ${type.isArray ? arrayType : type.type}, { ${decoratorOptions.join(', ')} })`,
       ) +
       '\n';
 
@@ -308,7 +306,7 @@ export class NestJSGraphQLVisitor<
       indent(
         `@GQL.${fieldDecorator}(_type => ${
           type.isArray ? `[${nestJSGraphQLType}]` : nestJSGraphQLType
-        }, {\n${decoratorOptions.join(', ')}\n})`,
+        }, { ${decoratorOptions.join(', ')} })`,
       ) +
       '\n';
 
