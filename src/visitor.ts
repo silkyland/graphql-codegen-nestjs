@@ -118,7 +118,7 @@ export class TypeGraphQLVisitor<
       } else if (interfaces.length === 1) {
         decoratorOptions = `{ implements: ${interfaces[0]} }`;
       }
-      declarationBlock = declarationBlock.withDecorator(`@TypeGraphQL.${typeDecorator}(${decoratorOptions})`);
+      declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}(${decoratorOptions})`);
     }
 
     return [declarationBlock.string, this.buildArgumentsBlock(originalNode)].filter(f => f).join('\n\n');
@@ -130,7 +130,7 @@ export class TypeGraphQLVisitor<
     let declarationBlock = this.getInputObjectDeclarationBlock(node);
 
     // Add type-graphql InputType decorator
-    declarationBlock = declarationBlock.withDecorator(`@TypeGraphQL.${typeDecorator}()`);
+    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}()`);
 
     return declarationBlock.string;
   }
@@ -158,7 +158,7 @@ export class TypeGraphQLVisitor<
     let declarationBlock = this.getArgumentsObjectDeclarationBlock(node, name, field);
 
     // Add type-graphql Args decorator
-    declarationBlock = declarationBlock.withDecorator(`@TypeGraphQL.${typeDecorator}()`);
+    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}()`);
 
     return declarationBlock.string;
   }
@@ -168,7 +168,7 @@ export class TypeGraphQLVisitor<
     const originalNode = parent[key] as InterfaceTypeDefinitionNode;
 
     const declarationBlock = this.getInterfaceTypeDeclarationBlock(node, originalNode).withDecorator(
-      `@TypeGraphQL.${interfaceDecorator}()`,
+      `@GQL.${interfaceDecorator}()`,
     );
 
     return [declarationBlock.string, this.buildArgumentsBlock(originalNode)].filter(f => f).join('\n\n');
@@ -221,7 +221,7 @@ export class TypeGraphQLVisitor<
     const type = singularType.replace(SCALAR_REGEX, (match, type) => {
       if (TYPE_GRAPHQL_SCALARS.includes(type)) {
         // This is a TypeGraphQL type
-        return `TypeGraphQL.${type}`;
+        return `GQL.${type}`;
       } else if (global[type]) {
         // This is a JS native type
         return type;
@@ -253,7 +253,7 @@ export class TypeGraphQLVisitor<
     const decorator =
       '\n' +
       indent(
-        `@TypeGraphQL.${fieldDecorator}(type => ${type.isArray ? arrayType : type.type}${
+        `@GQL.${fieldDecorator}(_type => ${type.isArray ? arrayType : type.type}${
           type.isNullable ? ', { nullable: true }' : ''
         })`,
       ) +
@@ -272,12 +272,11 @@ export class TypeGraphQLVisitor<
     const comment = transformComment((node.description as any) as string, 1);
 
     const type = this.parseType(rawType);
-    const typeGraphQLType =
-      type.isScalar && TYPE_GRAPHQL_SCALARS.includes(type.type) ? `TypeGraphQL.${type.type}` : type.type;
+    const typeGraphQLType = type.isScalar && TYPE_GRAPHQL_SCALARS.includes(type.type) ? `GQL.${type.type}` : type.type;
     const decorator =
       '\n' +
       indent(
-        `@TypeGraphQL.${fieldDecorator}(type => ${type.isArray ? `[${typeGraphQLType}]` : typeGraphQLType}${
+        `@GQL.${fieldDecorator}(_type => ${type.isArray ? `[${typeGraphQLType}]` : typeGraphQLType}${
           type.isNullable ? ', { nullable: true }' : ''
         })`,
       ) +
@@ -296,7 +295,7 @@ export class TypeGraphQLVisitor<
   EnumTypeDefinition(node: EnumTypeDefinitionNode): string {
     return (
       super.EnumTypeDefinition(node) +
-      `TypeGraphQL.registerEnumType(${this.convertName(node)}, { name: '${this.convertName(node)}' });\n`
+      `GQL.registerEnumType(${this.convertName(node)}, { name: '${this.convertName(node)}' });\n`
     );
   }
 

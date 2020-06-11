@@ -6,9 +6,9 @@ import { TypeGraphQLPluginConfig } from './config';
 
 export * from './visitor';
 
-const TYPE_GRAPHQL_IMPORT = `import * as TypeGraphQL from 'type-graphql';`;
+const TYPE_GRAPHQL_IMPORT = `import * as GQL from '@nestjs/graphql';`;
 const DECORATOR_FIX = `type FixDecorator<T> = T;`;
-const isDefinitionInterface = (definition: string) => definition.includes('@TypeGraphQL.InterfaceType()');
+const isDefinitionInterface = (definition: string) => definition.includes('@GQL.InterfaceType()');
 
 export const plugin: PluginFunction<TypeGraphQLPluginConfig, Types.ComplexPluginOutput> = (
   schema: GraphQLSchema,
