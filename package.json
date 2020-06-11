@@ -1,0 +1,68 @@
+{
+  "name": "@madsci/graphql-codegen-nestjs",
+  "version": "0.0.0",
+  "description": "GraphQL Code Generator plugin for @nestjs/graphql",
+  "author": "Madscience Ltd",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/madscience/graphql-codegen-nestjs.git"
+  },
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "cp package.json README.md dist/",
+    "lint": "eslint --ext .ts --ignore-path .gitignore .",
+    "lint:fix": "eslint --ext .ts --ignore-path .gitignore . --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:ci": "rimraf test/.results && mkdirp test/.results && jest --ci --runInBand --reporters=default --reporters=jest-junit",
+    "postversion": "npm run postbuild",
+    "release": "np"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^26.0.0",
+    "@types/node": "12.x",
+    "@typescript-eslint/eslint-plugin": "^3.2.0",
+    "@typescript-eslint/parser": "^3.2.0",
+    "eslint": "^7.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "graphql": "^15.1.0",
+    "graphql-tools": "^6.0.9",
+    "husky": "^4.2.5",
+    "jest": "^26.0.1",
+    "jest-junit": "^10.0.0",
+    "lint-staged": "^10.2.9",
+    "mkdirp": "^1.0.4",
+    "np": "^6.2.3",
+    "prettier": "^2.0.5",
+    "ts-jest": "^26.1.0",
+    "typeorm": "^0.2.25",
+    "typescript": "^3.9.5"
+  },
+  "jest-junit": {
+    "outputDirectory": "./test/.results",
+    "outputName": "junit.xml"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,js}": "eslint --cache --fix"
+  }
+}
