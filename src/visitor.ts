@@ -12,6 +12,7 @@ import {
   GraphQLEnumType,
   InputObjectTypeDefinitionNode,
   StringValueNode,
+  UnionTypeDefinitionNode,
 } from 'graphql';
 import {
   TypeScriptOperationVariablesToObject,
@@ -316,6 +317,16 @@ export class NestJSGraphQLVisitor<
     return (
       super.EnumTypeDefinition(node) +
       `GQL.registerEnumType(${this.convertName(node)}, { name: '${this.convertName(node)}' });\n`
+    );
+  }
+
+  UnionTypeDefinition(node: UnionTypeDefinitionNode, key: string | number | undefined, parent: any): string {
+    return (
+      super.UnionTypeDefinition(node, key, parent) +
+      `export const ${this.convertName(node)} = GQL.createUnionType({
+  name: '${this.convertName(node)}',
+  types: () => [${node.types!.map(type => type.name.value).join(', ')}],
+});\n`
     );
   }
 
