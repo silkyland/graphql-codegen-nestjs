@@ -375,6 +375,30 @@ describe('nestjs-graphql', () => {
     `);
   });
 
+  it('should generate @nestjs/graphql types for unions', async () => {
+    const schema = buildSchema(/* GraphQL */ `
+      type A {
+        flavor: String!
+      }
+      type B {
+        color: String!
+      }
+      union C = A | B
+    `);
+
+    const result = await plugin(schema, [], {}, { outputFile: '' });
+
+    expect(result.content).toBeSimilarStringTo(`
+      export type C = A | B;
+    `);
+    expect(result.content).toBeSimilarStringTo(`
+      export const C = GQL.createUnionType({
+        name: 'C',
+        types: () => [A, B],
+      });
+    `);
+  });
+
   it('should fix `Maybe` only refers to a type, but is being used as a value here for array return type', async () => {
     const schema = buildSchema(/* GraphQL */ `
       type Guest {
