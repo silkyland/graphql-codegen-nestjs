@@ -1,9 +1,4 @@
-import {
-  transformComment,
-  indent,
-  DeclarationBlock,
-  AvoidOptionalsConfig,
-} from '@graphql-codegen/visitor-plugin-common';
+import { indent, DeclarationBlock, AvoidOptionalsConfig } from '@graphql-codegen/visitor-plugin-common';
 import { NestJSGraphQLPluginConfig } from './config';
 import autoBind from 'auto-bind';
 import {
@@ -16,6 +11,7 @@ import {
   TypeNode,
   GraphQLEnumType,
   InputObjectTypeDefinitionNode,
+  StringValueNode,
 } from 'graphql';
 import {
   TypeScriptOperationVariablesToObject,
@@ -110,15 +106,22 @@ export class NestJSGraphQLVisitor<
 
     let declarationBlock = this.getObjectTypeDeclarationBlock(node, originalNode);
     if (!GRAPHQL_TYPES.includes((node.name as unknown) as string)) {
-      // Add type-graphql ObjectType decorator
+      // Add ObjectType decorator
+      const decoratorOptions: string[] = [];
       const interfaces = originalNode.interfaces!.map(i => this.convertName(i));
-      let decoratorOptions = '';
+
       if (interfaces.length > 1) {
-        decoratorOptions = `{ implements: [${interfaces.join(', ')}] }`;
+        decoratorOptions.push(`implements: [${interfaces.join(', ')}]`);
       } else if (interfaces.length === 1) {
-        decoratorOptions = `{ implements: ${interfaces[0]} }`;
+        decoratorOptions.push(`implements: ${interfaces[0]}`);
       }
-      declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}(${decoratorOptions})`);
+
+      if (node.description != null) {
+        decoratorOptions.push('description: `' + this.formatDescription(node.description) + '`');
+      }
+
+      declarationBlock = declarationBlock.withComment('');
+      declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
     }
 
     return [declarationBlock.string, this.buildArgumentsBlock(originalNode)].filter(f => f).join('\n\n');
@@ -126,11 +129,17 @@ export class NestJSGraphQLVisitor<
 
   InputObjectTypeDefinition(node: InputObjectTypeDefinitionNode): string {
     const typeDecorator = this.config.decoratorName.input;
+    const decoratorOptions: string[] = [];
 
     let declarationBlock = this.getInputObjectDeclarationBlock(node);
 
-    // Add type-graphql InputType decorator
-    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}()`);
+    if (node.description != null) {
+      decoratorOptions.push('description: `' + this.formatDescription(node.description) + '`');
+    }
+
+    // Add InputType decorator
+    declarationBlock = declarationBlock.withComment('');
+    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
 
     return declarationBlock.string;
   }
@@ -154,11 +163,17 @@ export class NestJSGraphQLVisitor<
     field: FieldDefinitionNode,
   ): string {
     const typeDecorator = this.config.decoratorName.arguments;
+    const decoratorOptions: string[] = [];
 
     let declarationBlock = this.getArgumentsObjectDeclarationBlock(node, name, field);
 
-    // Add type-graphql Args decorator
-    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}()`);
+    if (node.description != null) {
+      decoratorOptions.push('description: `' + this.formatDescription(node.description) + '`');
+    }
+
+    // Add Args decorator
+    declarationBlock = declarationBlock.withComment('');
+    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
 
     return declarationBlock.string;
   }
@@ -243,43 +258,51 @@ export class NestJSGraphQLVisitor<
   FieldDefinition(node: FieldDefinitionNode, key?: number | string, parent?: any): string {
     const fieldDecorator = this.config.decoratorName.field;
     let typeString = (node.type as any) as string;
-    const comment = transformComment((node.description as any) as string, 1);
 
     const type = this.parseType(typeString);
-
     const maybeType = type.type.match(MAYBE_REGEX);
     const arrayType = `[${maybeType ? this.clearOptional(type.type) : type.type}]`;
+
+    const decoratorOptions = [`nullable: ${type.isNullable ? 'true' : 'false'}`];
+
+    if (node.description != null) {
+      decoratorOptions.push('description: `' + this.formatDescription(node.description) + '`');
+    }
 
     const decorator =
       '\n' +
       indent(
-        `@GQL.${fieldDecorator}(_type => ${type.isArray ? arrayType : type.type}${
-          type.isNullable ? ', { nullable: true }' : ''
-        })`,
+        `@GQL.${fieldDecorator}(_type => ${type.isArray ? arrayType : type.type}, {\n${decoratorOptions.join(
+          ', ',
+        )}\n})`,
       ) +
       '\n';
 
     typeString = this.fixDecorator(type, typeString);
 
-    return (
-      comment + decorator + indent(`${this.config.immutableTypes ? 'readonly ' : ''}${node.name}!: ${typeString};`)
-    );
+    return decorator + indent(`${this.config.immutableTypes ? 'readonly ' : ''}${node.name}!: ${typeString};`);
   }
 
   InputValueDefinition(node: InputValueDefinitionNode, key?: number | string, parent?: any): string {
     const fieldDecorator = this.config.decoratorName.field;
     const rawType = node.type as TypeNode | string;
-    const comment = transformComment((node.description as any) as string, 1);
 
     const type = this.parseType(rawType);
     const nestJSGraphQLType =
       type.isScalar && NESTJS_GRAPHQL_SCALARS.includes(type.type) ? `GQL.${type.type}` : type.type;
+
+    const decoratorOptions = [`nullable: ${type.isNullable ? 'true' : 'false'}`];
+
+    if (node.description != null) {
+      decoratorOptions.push('description: `' + this.formatDescription(node.description) + '`');
+    }
+
     const decorator =
       '\n' +
       indent(
-        `@GQL.${fieldDecorator}(_type => ${type.isArray ? `[${nestJSGraphQLType}]` : nestJSGraphQLType}${
-          type.isNullable ? ', { nullable: true }' : ''
-        })`,
+        `@GQL.${fieldDecorator}(_type => ${
+          type.isArray ? `[${nestJSGraphQLType}]` : nestJSGraphQLType
+        }, {\n${decoratorOptions.join(', ')}\n})`,
       ) +
       '\n';
 
@@ -288,9 +311,7 @@ export class NestJSGraphQLVisitor<
       ? this.buildTypeString(type)
       : this.fixDecorator(type, rawType as string);
 
-    return (
-      comment + decorator + indent(`${this.config.immutableTypes ? 'readonly ' : ''}${nameString}!: ${typeString};`)
-    );
+    return decorator + indent(`${this.config.immutableTypes ? 'readonly ' : ''}${nameString}!: ${typeString};`);
   }
 
   EnumTypeDefinition(node: EnumTypeDefinitionNode): string {
@@ -306,5 +327,13 @@ export class NestJSGraphQLVisitor<
     }
 
     return str;
+  }
+
+  protected formatDescription(description: string | StringValueNode): string {
+    if (typeof description !== 'string') {
+      description = description.value;
+    }
+
+    return description.replace(/([\\$`])/g, '\\$1');
   }
 }
