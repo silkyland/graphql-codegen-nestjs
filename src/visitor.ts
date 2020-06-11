@@ -169,17 +169,11 @@ export class NestJSGraphQLVisitor<
     field: FieldDefinitionNode,
   ): string {
     const typeDecorator = this.config.decoratorName.arguments;
-    const decoratorOptions: string[] = [];
 
     let declarationBlock = this.getArgumentsObjectDeclarationBlock(node, name, field);
 
-    if (node.description != null) {
-      decoratorOptions.push('description: `' + this.formatDescription(node.description) + '`');
-    }
-
     // Add Args decorator
-    declarationBlock = declarationBlock.withComment('');
-    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
+    declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}()`);
 
     return declarationBlock.string;
   }
