@@ -101,7 +101,7 @@ describe('nestjs-graphql', () => {
         b!: Maybe<B>;
 
         @GQL.Field(_type => B, { nullable: false })
-        mandatoryB!: FixDecorator<B>;
+        mandatoryB!: B;
 
         @GQL.Field(_type => [String], { nullable: true })
         arr!: Maybe<Array<Scalars['String']>>;
@@ -212,7 +212,7 @@ describe('nestjs-graphql', () => {
         b!: Maybe<B>;
 
         @GQL.Field(_type => B, { nullable: false })
-        mandatoryB!: FixDecorator<B>;
+        mandatoryB!: B;
 
         @GQL.Field(_type => [String], { nullable: true })
         arr!: Maybe<Array<Scalars['String']>>;
@@ -294,7 +294,7 @@ describe('nestjs-graphql', () => {
         b!: Maybe<B>;
 
         @GQL.Field(_type => B, { nullable: false })
-        mandatoryB!: FixDecorator<B>;
+        mandatoryB!: B;
 
         @GQL.Field(_type => [String], { nullable: true })
         arr!: Maybe<Array<Scalars['String']>>;

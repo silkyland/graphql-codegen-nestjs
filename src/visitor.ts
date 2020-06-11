@@ -191,9 +191,6 @@ export class NestJSGraphQLVisitor<
   }
 
   buildTypeString(type: Type): string {
-    if (!type.isArray && !type.isScalar && !type.isNullable) {
-      type.type = `FixDecorator<${type.type}>`;
-    }
     if (type.isScalar) {
       type.type = `Scalars['${type.type}']`;
     }
@@ -252,13 +249,9 @@ export class NestJSGraphQLVisitor<
     return { type, isNullable, isArray, isScalar };
   }
 
-  fixDecorator(type: Type, typeString: string): string {
-    return type.isArray || type.isNullable || type.isScalar ? typeString : `FixDecorator<${typeString}>`;
-  }
-
   FieldDefinition(node: FieldDefinitionNode, key?: number | string, parent?: any): string {
     const fieldDecorator = this.config.decoratorName.field;
-    let typeString = (node.type as any) as string;
+    const typeString = (node.type as any) as string;
 
     const type = this.parseType(typeString);
     const maybeType = type.type.match(MAYBE_REGEX);
@@ -276,8 +269,6 @@ export class NestJSGraphQLVisitor<
         `@GQL.${fieldDecorator}(_type => ${type.isArray ? arrayType : type.type}, { ${decoratorOptions.join(', ')} })`,
       ) +
       '\n';
-
-    typeString = this.fixDecorator(type, typeString);
 
     return decorator + indent(`${this.config.immutableTypes ? 'readonly ' : ''}${node.name}!: ${typeString};`);
   }
@@ -306,9 +297,7 @@ export class NestJSGraphQLVisitor<
       '\n';
 
     const nameString = node.name.kind ? node.name.value : node.name;
-    const typeString = (rawType as TypeNode).kind
-      ? this.buildTypeString(type)
-      : this.fixDecorator(type, rawType as string);
+    const typeString = (rawType as TypeNode).kind ? this.buildTypeString(type) : (rawType as string);
 
     return decorator + indent(`${this.config.immutableTypes ? 'readonly ' : ''}${nameString}!: ${typeString};`);
   }
