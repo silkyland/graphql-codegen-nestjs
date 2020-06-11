@@ -1,6 +1,6 @@
 {
   "name": "@madsci/graphql-codegen-nestjs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "GraphQL Code Generator plugin for @nestjs/graphql",
   "author": "Madscience Ltd",
   "license": "MIT",
