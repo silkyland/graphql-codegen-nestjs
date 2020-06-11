@@ -124,7 +124,13 @@ export class NestJSGraphQLVisitor<
       declarationBlock = declarationBlock.withDecorator(`@GQL.${typeDecorator}({\n${decoratorOptions.join(', ')}\n})`);
     }
 
-    return [declarationBlock.string, this.buildArgumentsBlock(originalNode)].filter(f => f).join('\n\n');
+    return [
+      // change "extends" to "implements", as JS only allows single-class inheritance
+      declarationBlock.string.replace(/class ([^ ]+) extends /, 'class $1 implements '),
+      this.buildArgumentsBlock(originalNode),
+    ]
+      .filter(f => f)
+      .join('\n\n');
   }
 
   InputObjectTypeDefinition(node: InputObjectTypeDefinitionNode): string {
