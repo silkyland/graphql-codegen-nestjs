@@ -19,7 +19,7 @@
     "lint:fix": "eslint --ext .ts --ignore-path .gitignore . --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:ci": "rimraf test/.results && mkdirp test/.results && jest --ci --runInBand --reporters=default --reporters=jest-junit",
+    "test:ci": "rimraf test/.results && mkdirp test/.results && jest --ci --runInBand",
     "postversion": "npm run postbuild",
     "release": "np"
   },
@@ -50,7 +50,6 @@
     "graphql-tools": "^6.0.9",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
-    "jest-junit": "^10.0.0",
     "lint-staged": "^10.2.9",
     "mkdirp": "^1.0.4",
     "np": "^6.2.3",
@@ -58,10 +57,6 @@
     "ts-jest": "^26.1.0",
     "typeorm": "^0.2.25",
     "typescript": "^3.9.5"
-  },
-  "jest-junit": {
-    "outputDirectory": "./test/.results",
-    "outputName": "junit.xml"
   },
   "main": "index.js",
   "types": "index.d.ts",
